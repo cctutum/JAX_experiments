@@ -1,0 +1,40 @@
+import jax
+import numpy as np
+import jax.numpy as jnp
+
+
+def f(x):
+    y1 = x + x*x + 3
+    y2 = x*x + x*x.T
+    return y1*y2
+
+
+# Generate random data and upload it to CPU and GPU
+x = np.random.randn(3_000, 3_000).astype('float32')
+jax_x_cpu = jax.device_put(jnp.array(x), jax.devices('cpu')[0])
+jax_x_gpu = jax.device_put(jnp.array(x), jax.devices('gpu')[0])
+
+# compile function to CPU and GPU backends with JAX
+jax_f_cpu = jax.jit(f, backend='cpu')
+jax_f_gpu = jax.jit(f, backend='gpu')
+
+# warm-up
+jax_f_cpu(jax_x_cpu)
+jax_f_gpu(jax_x_gpu)
+
+
+# Evaluate compute time
+print("\nstandard NumPy eval:")
+%timeit -n100 f(x)
+
+print("\nnon-compiled JAX eval on CPU:")
+%timeit -n100 f(jax_x_cpu).block_until_ready()
+
+print("\nnon-compiled JAX eval on GPU:")
+%timeit -n100 f(jax_x_gpu).block_until_ready()
+
+print("\ncompiled JAX eval on CPU:")
+%timeit -n100 jax_f_cpu(jax_x_cpu).block_until_ready()
+
+print("\ncompiled JAX eval on GPU:")
+%timeit -n100 jax_f_gpu(jax_x_gpu).block_until_ready()
