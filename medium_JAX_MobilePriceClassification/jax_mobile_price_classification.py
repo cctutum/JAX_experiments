@@ -48,7 +48,7 @@ def loss(bias, weight, X, y, lmbd=0.1):
 
 #%% training loop
 
-num_epochs, lr = 100, 1e-1 
+num_epochs, lr = 1000, 1e-2 
 w = 1e-5 * jnp.ones(X.shape[1]) # 1 x 10-array
 b = 1.0
 history = [float(loss(b, w, X_train, y_train))]
